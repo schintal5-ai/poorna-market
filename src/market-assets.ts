@@ -1,7 +1,9 @@
+import{assetUrl}from'./asset-url';
 import * as T from 'three';import{GLTFLoader}from'three/addons/loaders/GLTFLoader.js';import{MeshoptDecoder}from'three/addons/libs/meshopt_decoder.module.js';
 export class MarketAssets{
  private models=new Map<string,T.Group>();readonly failures:string[]=[];
- async load(progress:(s:string)=>void){const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);let done=0;await Promise.all(['food_apple_01','bananas','lemon','brass_pot_01','wicker_basket_01','wooden_crate_01'].map(async id=>{try{const gltf=await loader.loadAsync(`/assets/${id}.glb`);this.models.set(id,gltf.scene)}catch{this.failures.push(id)}progress(`Preparing scanned market goods · ${++done}/6`)}))}
+ async load(progress:(s:string)=>void){const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);let done=0;await Promise.all(['food_apple_01','bananas','lemon','brass_pot_01','wicker_basket_01','wooden_crate_01'].map(async id=>{try{const gltf=await loader.loadAsync(assetUrl(`${id}.glb`));this.models.set(id,gltf.scene)}catch{this.failures.push(id)}progress(`Preparing scanned market goods · ${++done}/6`)}))}
  has(id:string){return this.models.has(id)}
  place(id:string,width:number,x:number,y:number,z:number,parent:T.Object3D,rotation=0){const model=this.models.get(id);if(!model)return;const copy=model.clone(true),bounds=new T.Box3().setFromObject(copy),size=bounds.getSize(new T.Vector3()),centre=bounds.getCenter(new T.Vector3()),scale=width/Math.max(size.x,size.z);copy.scale.multiplyScalar(scale);copy.position.set(-centre.x*scale,-bounds.min.y*scale,-centre.z*scale);const root=new T.Group();root.position.set(x,y,z);root.rotation.y=rotation;root.add(copy);parent.add(root);copy.traverse(o=>{if(o instanceof T.Mesh){o.castShadow=o.receiveShadow=true;const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{if(m instanceof T.MeshStandardMaterial)m.envMapIntensity=.7})}});return root}
 }
+

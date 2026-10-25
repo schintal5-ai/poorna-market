@@ -44,3 +44,9 @@ A-Frame camera/control separation informed the input architecture without replac
 
 Use ?review=1 for an optional canvas-only 12-second WebM recording control. tests/browser-regression.mjs exports the actual browser regression runner for the documented CUA tab interface.
 
+
+## GitHub Pages deployment
+
+The GitHub copy is public at https://github.com/schintal5-ai/poorna-market as approved for free GitHub Pages hosting. The Pages URL is https://schintal5-ai.github.io/poorna-market/ . The original private Site remains a separate deployment.
+
+Repository Settings → Pages uses GitHub Actions. .github/workflows/deploy.yml installs pinned pnpm and Node 24, runs the regression suite, builds dist, and publishes it on pushes to main or manual dispatch. Relative Vite output and the shared assetUrl helper support both repository subpaths and root-domain hosting. No deployment secret or personal access token is needed in this repository.

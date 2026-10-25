@@ -40,3 +40,7 @@ Final single-point samples: high detail 38 fps, 575 draws, 2,764,692 triangles, 
 The retained interface contrast tokens are green/paper 11.78:1, muted/paper 5.93:1, terracotta/cream 5.38:1 and green/cream 10.62:1. Focus styles, responsive layout and reduced-motion paths remain implemented. This revision was tested in a desktop browser; physical touch-device, OS reduced-motion, deliberate network-failure, tab-hiding/blur, and comprehensive accessibility audits were not independently repeated. Touch buttons share the tested held/single-step input path. No unrelated AR/VR framework migration or image backend was added.
 
 Water infrastructure remains a non-potable conceptual network, separate from drinking/food preparation; engineering sizing and overflow routing remain subject to site design. The private audience and existing URL are preserved.
+
+## GitHub Pages compatibility update
+
+The GitHub copy was made public with the user's explicit approval to enable free Pages hosting. The original private Site is unchanged. Fifteen local tests now pass, including shared asset URL resolution for both /poorna-market/ and root-domain hosting; TypeScript and the production build pass. The workflow uses pinned official GitHub Actions and publishes the tested dist artifact from main. GitHub-hosted build, deployment and live browser verification are checked separately during publication.

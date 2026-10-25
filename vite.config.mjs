@@ -1,1 +1,2 @@
-export default {optimizeDeps:{exclude:['three']},build:{rollupOptions:{output:{manualChunks:{three:['three']}}}}};
+export default {base:'./',optimizeDeps:{exclude:['three']},build:{rollupOptions:{output:{manualChunks:{three:['three']}}}}};
+

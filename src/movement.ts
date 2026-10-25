@@ -1,0 +1,5 @@
+export interface Motion {x:number;z:number;yaw:number}
+export interface Direction {forward:number;strafe:number;turn:number}
+/** Substeps keep speed independent of the render rate without tunnelling through obstacles. */
+export function advanceMotion(state:Motion,direction:Direction,seconds:number,blocked:(x:number,z:number)=>boolean){const result={...state};let remaining=Math.min(Math.max(seconds,0),.25);const norm=Math.max(1,Math.hypot(direction.forward,direction.strafe));while(remaining>1e-6){const dt=Math.min(remaining,1/60);remaining-=dt;result.yaw+=direction.turn*dt*1.2;const dx=(-Math.sin(result.yaw)*direction.forward+Math.cos(result.yaw)*direction.strafe)*2.3*dt/norm;const dz=(-Math.cos(result.yaw)*direction.forward-Math.sin(result.yaw)*direction.strafe)*2.3*dt/norm;if(!blocked(result.x+dx,result.z))result.x+=dx;if(!blocked(result.x,result.z+dz))result.z+=dz;}return result}
+export function movementEnabled(ready:boolean,exploring:boolean,modalOpen:boolean,suspended:boolean){return ready&&exploring&&!modalOpen&&!suspended}

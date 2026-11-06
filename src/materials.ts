@@ -5,6 +5,8 @@ export type Surface='stone'|'plaster'|'wood'|'fabric'|'metal'|'plain'|'ceramic'|
 export class Materials {
  private maps=new Map<string,T.Texture>();private cache=new Map<string,T.MeshStandardMaterial>();
  readonly failures:string[]=[];readonly glow=new T.MeshStandardMaterial({color:0xffe7bd,emissive:0xffc46d,emissiveIntensity:.15,roughness:.3});
+ /** Lit shop and office interiors seen through the complex windows; brightened in the evening. */
+ readonly interior=new T.MeshStandardMaterial({color:0x6d625a,emissive:0xffd29a,emissiveIntensity:.08,roughness:.9});
  async load(renderer:T.WebGLRenderer,scene:T.Scene,onProgress:(s:string)=>void){
   const loader=new T.TextureLoader();let done=0;
   const tasks=['stone','plaster','wood','fabric'].flatMap(name=>['diff','normal','rough'].map(async kind=>{try{const tex=await loader.loadAsync(assetUrl(`${name}-${kind}.webp`));tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),8);if(kind==='diff')tex.colorSpace=T.SRGBColorSpace;this.maps.set(`${name}-${kind}`,tex)}catch{this.failures.push(`${name}-${kind}`)}onProgress(`Preparing materials · ${++done}/13`)}));

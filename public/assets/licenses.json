@@ -1,29 +1,5 @@
 [
   {
-    "file": "maya.glb",
-    "source": "https://www.innerscene.com/api/library/locomotion-collection-maya-3d-person-animated-1499b2fd/download",
-    "license": "CC0-1.0",
-    "creator": "Innerscene, adapted from MakeHuman/MPFB CC0 assets",
-    "page": "https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-maya-3d-person-animated-1499b2fd",
-    "processing": "Optimized with Meshopt geometry compression and/or WebP textures at 1024px; added locally authored Walk_Natural and Idle_Natural clips with relaxed shoulders, soft elbows, normalized quaternion tracks and sampled sole grounding"
-  },
-  {
-    "file": "sam.glb",
-    "source": "https://www.innerscene.com/api/library/locomotion-collection-sam-3d-person-animated-dc23800f/download",
-    "license": "CC0-1.0",
-    "creator": "Innerscene, adapted from MakeHuman/MPFB CC0 assets",
-    "page": "https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-sam-3d-person-animated-dc23800f",
-    "processing": "Optimized with Meshopt geometry compression and/or WebP textures at 1024px; added locally authored Walk_Natural and Idle_Natural clips with relaxed shoulders, soft elbows, normalized quaternion tracks and sampled sole grounding"
-  },
-  {
-    "file": "harper.glb",
-    "source": "https://www.innerscene.com/api/library/locomotion-collection-harper-3d-person-animated-797e1e2a/download",
-    "license": "CC0-1.0",
-    "creator": "Innerscene, adapted from MakeHuman/MPFB CC0 assets",
-    "page": "https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-harper-3d-person-animated-797e1e2a",
-    "processing": "Optimized with Meshopt geometry compression and/or WebP textures at 1024px; added locally authored Walk_Natural and Idle_Natural clips with relaxed shoulders, soft elbows, normalized quaternion tracks and sampled sole grounding"
-  },
-  {
     "file": "stone-diff.webp",
     "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_sandstone_pavement/red_sandstone_pavement_diff_2k.jpg",
     "license": "CC0-1.0",

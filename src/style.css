@@ -13,3 +13,16 @@
 .touch-pad{display:grid;bottom:175px;left:24px}.touch-pad button{border-radius:4px;background:var(--paper);color:var(--green);touch-action:none;box-shadow:0 2px 10px #102a281a}.controls-hint{bottom:24px}.touch-pad button:hover{background:#e4e8db}.touch-pad button:active{background:#c5d5c7}.explore-hud{max-width:380px}
 @media(max-width:560px){.touch-pad{left:12px;bottom:175px}.explore-hud{max-width:none}}
 .review-capture{position:absolute;top:76px;left:24px;z-index:5;background:var(--paper);padding:10px;display:flex;gap:12px;align-items:center;font-size:10px;max-width:80%;flex-wrap:wrap}.review-capture button{background:var(--green);color:var(--paper);border:0;padding:8px}.review-capture a{color:var(--terra)}
+
+/* Edition 04: VR mode, water network, basket */
+.vr-button{background:var(--terra);color:var(--paper);border-color:var(--terra);font-weight:600}.vr-button[aria-pressed=true]{background:var(--green);border-color:var(--green)}.vr-button .icon{stroke-width:1.8}
+.basket-panel{position:absolute;right:24px;top:132px;width:230px;max-height:calc(100% - 300px);min-height:150px;display:flex;flex-direction:column;background:var(--paper);box-shadow:0 6px 30px #142b2526;padding:14px 15px 12px;z-index:3;border-radius:var(--radius)}
+.basket-head{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding-bottom:9px}.basket-head h3{margin:0;font-family:var(--serif);font-weight:500;font-size:17px;flex:1}.basket-head span{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+#basket-list{list-style:none;margin:6px 0;padding:0;overflow:auto;flex:1;min-height:44px;font-size:12px}#basket-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}#basket-list li.empty{color:var(--muted);line-height:1.5;border:0}
+.link{border:0;background:none;color:var(--terra);font-size:11px;text-decoration:underline;padding:6px 2px;min-height:32px}
+.basket-actions{display:flex;flex-wrap:wrap;gap:6px}.basket-actions .tool{flex:1;border-color:var(--line);white-space:nowrap}
+.toast{position:absolute;left:50%;top:76px;transform:translate(-50%,-8px);background:var(--green);color:var(--paper);padding:10px 16px;border-radius:30px;font-size:12px;opacity:0;pointer-events:none;transition:opacity var(--fast),transform var(--fast);z-index:7;max-width:min(90%,460px);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1180px){.viewer-tools .tool:not(.vr-button) span{display:none}}
+@media(max-width:900px){.basket-panel{width:190px;top:124px;max-height:220px}}
+@media(max-width:560px){.viewer-tools .vr-button span{display:inline;font-size:10px}.basket-panel{top:auto;right:12px;bottom:262px;width:150px;max-height:150px;min-height:0;padding:9px 10px}.basket-head h3{font-size:13px}.basket-head .icon{display:none}#basket-list li.empty{display:none}#pick-near,#put-all{display:none}.toast{top:60px;font-size:11px}}
+@media(max-width:560px){.vr-button{white-space:nowrap}.basket-head{padding-bottom:5px}.basket-head h3{white-space:nowrap}.basket-head span{font-size:8px;letter-spacing:.5px}#basket-list{min-height:0;max-height:70px;margin:3px 0}.basket-actions .tool{height:32px;font-size:10px}}

@@ -1,4 +1,25 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
-test('human models contain compressed rigged geometry, textures and real walk/idle clips',()=>{for(const name of ['sam','maya','harper']){const b=fs.readFileSync(new URL(`../public/assets/${name}.glb`,import.meta.url));assert.equal(b.toString('utf8',0,4),'glTF');const json=JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));assert.ok(json.skins.length>0);assert.ok(json.extensionsUsed.includes('EXT_meshopt_compression'));assert.ok(json.extensionsUsed.includes('EXT_texture_webp'));assert.ok(json.animations.some(c=>c.name==='Walk_Relaxed'));assert.ok(json.animations.some(c=>c.name==='Idle_Standing'));assert.ok(b.length<4_000_000)}});
-test('every licensed asset is present locally and no raw downloads ship',()=>{const root=new URL('../public/assets/',import.meta.url);const manifest=JSON.parse(fs.readFileSync(new URL('licenses.json',root),'utf8'));for(const record of manifest){assert.equal(record.license,'CC0-1.0');assert.ok(fs.existsSync(new URL(record.file,root)),record.file)}assert.equal(fs.readdirSync(root).some(f=>f.endsWith('-raw.glb')),false)});
-test('all characters ship baked natural gait and idle corrections',()=>{for(const name of ['sam','maya','harper']){const b=fs.readFileSync(new URL(`../public/assets/${name}.glb`,import.meta.url));const j=JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));for(const clipName of ['Walk_Natural','Idle_Natural']){const clip=j.animations.find(a=>a.name===clipName);assert.ok(clip);assert.equal(clip.extras.fps,30);assert.ok(clip.channels.length>100);assert.ok(clip.samplers.every(s=>s.interpolation==='LINEAR'))}assert.equal(j.animations.find(a=>a.name==='Walk_Natural').extras.referenceSpeed,1.3)}});
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const root = new URL('../public/assets/', import.meta.url);
+
+test('every licensed asset is present locally and no raw downloads ship', () => {
+  const manifest = JSON.parse(fs.readFileSync(new URL('licenses.json', root), 'utf8'));
+  for (const record of manifest) {
+    assert.equal(record.license, 'CC0-1.0');
+    assert.ok(fs.existsSync(new URL(record.file, root)), record.file);
+  }
+  assert.equal(fs.readdirSync(root).some((f) => f.endsWith('-raw.glb')), false);
+});
+
+test('no people ship with the walkthrough: no character models, skeletons or crowd code', () => {
+  for (const name of ['sam.glb', 'maya.glb', 'harper.glb']) assert.equal(fs.existsSync(new URL(name, root)), false, name);
+  for (const f of fs.readdirSync(root).filter((n) => n.endsWith('.glb'))) {
+    const b = fs.readFileSync(new URL(f, root));
+    const json = JSON.parse(b.toString('utf8', 20, 20 + b.readUInt32LE(12)));
+    assert.equal((json.skins ?? []).length, 0, f + ' has a skeleton');
+  }
+  const src = new URL('../src/', import.meta.url);
+  for (const f of fs.readdirSync(src)) assert.doesNotMatch(fs.readFileSync(new URL(f, src), 'utf8'), /SkinnedMesh|AnimationMixer|crowd/i, f);
+});

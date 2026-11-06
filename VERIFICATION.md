@@ -1,46 +1,53 @@
-# Verification — Edition 03
+# Verification — Edition 04
 
-Validated on 25 October 2026 in Windows and the Codex in-app Chromium browser. Geometry remains illustrative.
+Checked on 6 November 2026 on Windows, in the Claude desktop app's built-in Chromium browser, against the Vite dev server. Geometry is illustrative.
 
-## Passed automated checks
+## Automated checks
 
-Strict TypeScript and the production Vite build pass. Fourteen Node tests pass: complete corridor reachability, boundaries and invalid coordinates, closed/open modal gating, frame-independent movement at 10/60 fps, normalized diagonal collision movement, continuous crowd routes, sixteen collectors, twenty-six unique shop branches, baked natural animation clips, compressed licensed assets, actual canopy geometry separation, and world-coordinate preservation for quantized scans during batching.
+Strict TypeScript and the production Vite build pass. All **19 Node tests pass**:
 
-The generated panel/rib/perimeter geometry has a minimum horizontal envelope gap of **1.461 m**, exceeding the shared **0.5 m** requirement. Roof horizontal scale is **65%** of Edition 02; columns/headroom are retained.
+| Area | Checks |
+|---|---|
+| Navigation | Both promenade lanes reachable along the whole street; all five stops walkable; stall bays and gateways blocked; invalid coordinates fail closed. |
+| Centre row | Harvester and tree alternate every 6 m at the street centre; no side harvesters remain; harvesters serve the whole corridor; columns and seat walls are solid. |
+| Petals | Real canopy geometry keeps at least 0.5 m between petals and leaves 1.4 m for the tree crowns. |
+| Complex | G+2, 4 m floors, 17 bays per wing (3.06 m), two arches per wing, west side. |
+| Water | 39 unique non-potable branches (26 complex units and 13 street shops); 6 treatment stages. |
+| Shopping | 6 goods per stall within reach of the lane; a basket is needed first; goods fly in and are put back exactly; in VR, a release near the basket drops in and anywhere else returns home; no stall blocks an arch. |
+| Assets | Every licensed asset is present; no people models, skeletons or crowd code ship. |
+| Movement | Modal gating; frame-rate-independent walking; bounded diagonal collision; quantized-scan batching. |
 
-## Actual browser regression
+## Browser checks
 
-Ten checks pass using real keyboard and pointer input, with before/after camera positions read from the canvas's public diagnostic attributes. The runner is tests/browser-regression.mjs. The delivered poorna-market-walking-regression.json contains results and coordinates.
-
-1. Keyboard movement with the water dialog initially closed.
-2. Open modal blocks movement.
-3. Closing the modal restores exploration.
-4. Destination changes retain keyboard control.
-5. Keyboard activation of a direction button produces a single step.
-6. Holding a direction button moves continuously.
-7. Releasing the button leaves no stuck input.
-8. Manual input cancels a guided route.
-9. Fullscreen keyboard movement works.
-10. Exiting fullscreen restores walking, including automatic WebGL context recovery.
-
-Blur, tab hiding, pointer cancellation and modal state clear held input in the implementation. Fullscreen exit initially exposed a lost graphics context in this browser; restoration now rebuilds environment lighting and refocuses the scene. The final regression passed after the last functional changes.
-
-## Visual review and evidence
-
-The review folder contains matching Edition 02 / Edition 03 daylight screenshots at all five stops, plus five evening views. The accompanying comparison.html presents the images. Capture positions are destination-defined; animated people naturally differ between captures. Viewed both gateways, smaller separated collector silhouettes, accessible circulation, daylight/evening shading, relaxed down arms and scanned foreground goods. Review caught and corrected the MakeHuman arm axis and integer-coordinate clamping during scanned-mesh batching. The latter now has a regression test.
-
-The WebM records the actual canvas, including the rebaked walking poses, gateway turns and movement near the viewer. Walking and idle blend over 250 ms; speed follows world velocity and body scale. Grounded reduced-motion idle and standing actors remain available. This review supports visible improvement; it does not certify absence of foot sliding or intersections under every possible interaction. Three free character bases and some bespoke market geometry remain visibly reused. The result is real-time CGI, not achieved photographic realism.
+- **Load:** the scene loads with no console errors, and loading and asset warnings clear.
+- **Complex:**
+  - The facade matches the elevation: pink lattice transom, solid band, and U-shaped glazing with frames.
+  - The pink arch spandrels are visible.
+  - Two left-side stalls that stood in front of the arches were removed after review.
+- **Centre row:** seen in daylight and evening, with the seat walls, uplights and harvester lamp rings showing.
+- **Basket:**
+  - A real mouse click on a jasmine string added it to the basket; the panel and the toast updated.
+  - **Put back** returned it; afterwards no item was away from its stall.
+  - On a phone (375 × 812) the basket stays in view bottom-right with the goods inside, and the page has no horizontal scroll.
+- **Water network:** the paving turns see-through. The collection main, filter, tank, pump, both supply mains and the branches show, with flow animation and labels.
+- **VR mode without a headset:** the button explains how to open the site on a Quest.
 
 ## Performance
 
-Final single-point samples: high detail 38 fps, 575 draws, 2,764,692 triangles, 1380 × 625 buffer; reduced detail 39 fps, 626 draws, 3,714,205 triangles, 1104 × 500 buffer. Samples occurred at different animation/culling instants and are not a controlled benchmark. Earlier entrance/produce observations after scan simplification were approximately 28–32 fps. Device GPU/CPU identification was unavailable. Reduced detail also shortens character visibility and lowers shadows. Public runtime art totals about 17.9 MB. Vite reports its advisory for the 574 kB Three.js vendor chunk (146 kB compressed).
+Total scene geometry fell from about **2.95M to 1.49M triangles** during review:
+- simple goods instead of scans inside the complex shops and on the east-shop shelves;
+- procedural bananas and stall-top baskets;
+- lighter spheres.
 
-## Scope of remaining verification
+The built-in pane rendered about 82 fps with 120–460 draw calls depending on the view (pane-sized buffer; not a controlled benchmark). In the evening view the street lamps are 4 point lights rather than 8, so switching to evening stalls less while shaders recompile. In VR, foveation level 1 is requested.
 
-The retained interface contrast tokens are green/paper 11.78:1, muted/paper 5.93:1, terracotta/cream 5.38:1 and green/cream 10.62:1. Focus styles, responsive layout and reduced-motion paths remain implemented. This revision was tested in a desktop browser; physical touch-device, OS reduced-motion, deliberate network-failure, tab-hiding/blur, and comprehensive accessibility audits were not independently repeated. Touch buttons share the tested held/single-step input path. No unrelated AR/VR framework migration or image backend was added.
+## Not yet verified
 
-Water infrastructure remains a non-potable conceptual network, separate from drinking/food preparation; engineering sizing and overflow routing remain subject to site design. The private audience and existing URL are preserved.
-
-## GitHub Pages compatibility update
-
-The GitHub copy was made public with the user's explicit approval to enable free Pages hosting. The original private Site is unchanged. Fifteen local tests now pass, including shared asset URL resolution for both /poorna-market/ and root-domain hosting; TypeScript and the production build pass. The workflow uses pinned official GitHub Actions and publishes the tested dist artifact from main. GitHub-hosted build, deployment and live browser verification are checked separately during publication.
+- **Real Meta Quest:** VR mode was not run on a headset or in an XR emulator. On the device, check:
+  - entering VR;
+  - thumbstick walking (1.8 m/s) and 30° snap turn;
+  - grip and pinch grabbing, and the basket on the hand;
+  - trigger pointing;
+  - frame rate.
+- **Other browsers and assistive technology:** Safari, Firefox, physical touch devices and screen readers were not tested.
+- **Engineering:** the water system remains a non-potable concept; sizing and overflow routing need site design.

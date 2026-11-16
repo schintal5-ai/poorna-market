@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {centreRow, canopies, shopConnections, waterStages, rowSpacing, complex, bayWidth, isArchBay, complexHeight} from '../src/infrastructure.ts';
+import {centreRow, canopies, shopConnections, waterStages, rowSpacing, complex, bayWidth, archCount, archZ, complexHeight, complexLength} from '../src/infrastructure.ts';
 import {canWalk} from '../src/navigation.ts';
 
 test('the centre row alternates harvester and tree every six metres down the middle of the street', () => {
@@ -35,13 +35,16 @@ test('every complex unit and street shop has a unique separate non-potable branc
   assert.equal(waterStages.length, 6);
 });
 
-test('the complex follows the elevation: G+2, 4 m floors, 17-bay wings with two arches each', () => {
+test("the complex follows Elevation AA': G+2, 4 m floors, 23 bays, 8 arched modules, same frontage", () => {
   assert.equal(complex.floors, 3);
   assert.equal(complex.floorHeight, 4);
-  assert.equal(complex.baysPerModule, 17);
-  assert.ok(Math.abs(bayWidth - 3.06) < 0.01);
-  const bays = complex.modules * complex.baysPerModule;
-  assert.equal(Array.from({length: bays}, (_, b) => b).filter(isArchBay).length, 2 * 2 * complex.modules);
+  assert.equal(complex.bays, 23);
+  assert.equal(complex.tallBays, 6);
+  assert.equal(archCount, 8);
+  assert.equal(complex.tallBays + 2 * archCount + 1, complex.bays);
+  assert.equal(complexLength, 104);
+  assert.ok(Math.abs(bayWidth - 104 / 23) < 1e-9);
+  assert.equal(archZ.length, complex.entranceArches.length);
   assert.ok(complexHeight > 12 && complexHeight < 13.5);
   assert.equal(complex.side, -1);
 });

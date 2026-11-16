@@ -4,7 +4,7 @@ A detailed, vehicle-free architectural concept for the Poorna Market corridor in
 
 ## What's new in Edition 04
 
-- **Shopping complex (west side, on your left as you enter).** Built from the owner's elevation: G+2 with three 4 m floors, round-bottomed windows with pink lattice transoms, floor bands and a parapet. The 17-bay elevation is repeated twice along the whole 104 m frontage. Each wing has two great arched entrances with pink spandrels, leading to lit passages with stairs. The 26 ground-floor bays are glazed shopfronts with name boards and goods, and two rooftop tanks feed the upper floors. The east side is unchanged.
+- **Shopping complex (west side, on your left as you enter).** Rebuilt from Elevation AA' on the same frontage: G+2 with three 4 m floors and 23 bays. Six full-height round-bottomed windows at the entrance end are followed by eight great circular arches in pink panels, each under a pair of tall round-bottomed windows, and one closing window. All glazing is pink lattice glass. Three of the arches are walk-through entrances with lit passages and stairs; the others open into glazed shop halls. The street, stalls and water network are unchanged. The east side is unchanged.
 - **Centre row.** The side canopies and side trees are gone. Down the middle of the street the row alternates **harvester, tree, harvester, tree** every 6 m: 7 rain harvesters and 7 trees. Every tree is ringed by a circular stone seat wall with a timber seat. People walk the two promenade lanes either side of the row.
 - **Water network in 3D.** **Water network** makes the paving see-through and shows the system underneath:
   - the downpipes and the collection main;

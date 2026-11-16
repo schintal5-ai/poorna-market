@@ -11,7 +11,7 @@ Strict TypeScript and the production Vite build pass. All **19 Node tests pass**
 | Navigation | Both promenade lanes reachable along the whole street; all five stops walkable; stall bays and gateways blocked; invalid coordinates fail closed. |
 | Centre row | Harvester and tree alternate every 6 m at the street centre; no side harvesters remain; harvesters serve the whole corridor; columns and seat walls are solid. |
 | Petals | Real canopy geometry keeps at least 0.5 m between petals and leaves 1.4 m for the tree crowns. |
-| Complex | G+2, 4 m floors, 17 bays per wing (3.06 m), two arches per wing, west side. |
+| Complex | G+2, 4 m floors, Elevation AA': 23 bays (4.52 m) over the same 104 m frontage, 8 arched modules (3 walk-through entrances), west side. |
 | Water | 39 unique non-potable branches (26 complex units and 13 street shops); 6 treatment stages. |
 | Shopping | 6 goods per stall within reach of the lane; a basket is needed first; goods fly in and are put back exactly; in VR, a release near the basket drops in and anywhere else returns home; no stall blocks an arch. |
 | Assets | Every licensed asset is present; no people models, skeletons or crowd code ship. |

@@ -1,7 +1,7 @@
 import * as T from 'three';
 import type {Kit} from './geometry';
 import type {Props} from './props';
-import {complex, complexLength, bayWidth, isArchBay, shopConnections} from './infrastructure';
+import {complex, complexLength, bayWidth, bayX, archX, archCount, isEntrance, shopConnections} from './infrastructure';
 
 /** Ground-floor tenants of the complex, in bay order from the entrance end. */
 const unitNames: [string, string][] = [
@@ -15,57 +15,56 @@ const unitNames: [string, string][] = [
 ];
 const unitGoods = ['brass', 'books', 'produce', 'textiles', 'produce', 'brass', 'food', 'textiles', 'craft', 'books', 'produce', 'produce', 'textiles', 'craft', 'textiles', 'produce', 'brass', 'flowers', 'textiles', 'craft', 'books', 'craft', 'food', 'produce', 'craft', 'craft'];
 
-/** Window proportions measured from the elevation (metres above each floor). */
-export const windowSpec = {width: 1.78, bottom: 0.25, roundTop: 0.25 + 0.89, glassTop: 2.1, bandTop: 2.35, top: 3.45};
-export const archSpec = {width: 4.8, springing: 1.6, rise: 1.9};
+/** Openings measured from Elevation AA' (metres; its 4 m floors scale the drawing at 23.5 px/m). Widths are ratios of the bay pitch. */
+export const windowSpec = {widthRatio: 0.61, low: 0.17, upperLow: 4.34, top: 11.36};
+export const archSpec = {widthRatio: 1.54, panelRatio: 1.6, springing: 0.15, panelTop: 4};
 
-function windowPath<P extends T.Path>(path: P, uc: number, v0: number, grow = 0): P {
-  const hw = windowSpec.width / 2 + grow;
-  path.moveTo(uc - hw, v0 + windowSpec.top + grow);
-  path.lineTo(uc - hw, v0 + windowSpec.roundTop);
-  path.absarc(uc, v0 + windowSpec.roundTop, hw, Math.PI, 0, false);
-  path.lineTo(uc + hw, v0 + windowSpec.top + grow);
-  path.lineTo(uc - hw, v0 + windowSpec.top + grow);
+/** A round-bottomed ("U") window outline centred on cx, from its lowest point to its flat top. */
+function uOutline<P extends T.Path>(path: P, cx: number, hw: number, low: number, top: number, grow = 0): P {
+  const cy = low + hw;
+  path.moveTo(cx - hw - grow, top + grow);
+  path.lineTo(cx - hw - grow, cy);
+  path.absarc(cx, cy, hw + grow, Math.PI, 0, false);
+  path.lineTo(cx + hw + grow, top + grow);
+  path.lineTo(cx - hw - grow, top + grow);
   return path;
 }
 
-let lattice: T.CanvasTexture | undefined;
-/** The pink hatched transom panels of the elevation: tinted glass behind a fine square lattice. */
-function latticeTexture() {
-  if (lattice) return lattice;
-  const c = document.createElement('canvas');
-  c.width = 256;
-  c.height = 160;
-  const ctx = c.getContext('2d')!;
-  const g = ctx.createLinearGradient(0, 0, 0, 160);
-  g.addColorStop(0, '#f4b8c0');
-  g.addColorStop(1, '#e597a3');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 160);
-  ctx.strokeStyle = '#fff4f2';
-  ctx.lineWidth = 3;
-  for (let x = 0; x <= 256; x += 21.3) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 160);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= 160; y += 21.3) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(256, y);
-    ctx.stroke();
-  }
-  ctx.strokeStyle = '#b86c78';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(0, 0, 256, 160);
-  lattice = new T.CanvasTexture(c);
-  lattice.colorSpace = T.SRGBColorSpace;
-  lattice.anisotropy = 4;
-  return lattice;
+/** Ground-floor arch of module k: a near-semicircular opening from the elevation's circles. */
+function archGeom(k: number) {
+  const c = archX(k);
+  const R = (archSpec.widthRatio * bayWidth) / 2;
+  return {k, c, R, l: c - R, r: c + R, pw: archSpec.panelRatio * bayWidth};
+}
+type Arch = ReturnType<typeof archGeom>;
+function archOutline<P extends T.Path>(path: P, a: Arch): P {
+  path.lineTo(a.l, 0);
+  path.lineTo(a.l, archSpec.springing);
+  path.absellipse(a.c, archSpec.springing, a.R, a.R, Math.PI, 0, true, 0);
+  path.lineTo(a.r, 0);
+  return path;
 }
 
-/** Builds the G+2 shopping complex of the owner's elevation along the west frontage. */
+let hatch: T.CanvasTexture | undefined;
+/** The pink glazing of the elevation: tinted glass behind fine vertical lattice lines (one tile per metre). */
+function hatchTexture() {
+  if (hatch) return hatch;
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = 'rgba(244,170,182,0.55)';
+  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = 'rgba(255,238,240,0.8)';
+  for (let x = 0; x < 64; x += 8) ctx.fillRect(x + 3, 0, 2, 64);
+  hatch = new T.CanvasTexture(c);
+  hatch.wrapS = hatch.wrapT = T.RepeatWrapping;
+  hatch.colorSpace = T.SRGBColorSpace;
+  hatch.anisotropy = 4;
+  return hatch;
+}
+
+/** Builds the G+2 shopping complex of Elevation AA' along the west frontage. */
 export function buildComplex(k: Kit, p: Props) {
   const m = k.materials;
   const g = new T.Group();
@@ -80,46 +79,44 @@ export function buildComplex(k: Kit, p: Props) {
   const trim = m.get('plaster', 0xfbf7ef, 0.5);
   const frame = m.get('metal', 0x3f4442);
   const stone = m.get('stone', 0xcfc5b0, 0.5);
-  const glass = new T.MeshPhysicalMaterial({color: 0x8ea4a6, transparent: true, opacity: 0.38, roughness: 0.06, metalness: 0.2, envMapIntensity: 1.2, side: T.DoubleSide});
-  const transom = new T.MeshStandardMaterial({map: latticeTexture(), roughness: 0.45, emissive: 0xf0a0ac, emissiveIntensity: 0.05});
+  const shopGlass = new T.MeshPhysicalMaterial({color: 0x8ea4a6, transparent: true, opacity: 0.38, roughness: 0.06, metalness: 0.2, envMapIntensity: 1.2, side: T.DoubleSide});
+  const pinkGlass = new T.MeshStandardMaterial({map: hatchTexture(), transparent: true, depthWrite: false, roughness: 0.45, emissive: 0xf0a0ac, emissiveIntensity: 0.08, side: T.DoubleSide});
   const depth = 0.42;
-  const arches: {l: number; r: number; c: number}[] = [];
-  for (let b = 0; b < complex.modules * complex.baysPerModule; b++) {
-    const local = b % complex.baysPerModule;
-    if ((complex.archBays as readonly number[]).includes(local)) {
-      const c = (b + 1) * bayWidth;
-      arches.push({l: c - archSpec.width / 2, r: c + archSpec.width / 2, c});
-    }
+  const hw = (windowSpec.widthRatio * bayWidth) / 2;
+  const arches = Array.from({length: archCount}, (_, i) => archGeom(i));
+
+  // Facade wall: one extrusion, with the arches cut from the base and every window cut through.
+  const s = new T.Shape();
+  s.moveTo(0, 0);
+  for (const a of arches) archOutline(s, a);
+  s.lineTo(L, 0);
+  s.lineTo(L, H);
+  s.lineTo(0, H);
+  s.lineTo(0, 0);
+  for (let b = 0; b < complex.bays; b++) s.holes.push(uOutline(new T.Path(), bayX(b), hw, b < complex.tallBays ? windowSpec.low : windowSpec.upperLow, windowSpec.top));
+  const wallMesh = k.mesh(new T.ExtrudeGeometry(s, {depth, bevelEnabled: false, curveSegments: 18}), wall, g);
+  wallMesh.position.z = -depth;
+
+  // Pink panel behind every arch (the pink squares of the elevation), with a framed opening.
+  for (const a of arches) {
+    const ps = new T.Shape();
+    ps.moveTo(a.c - a.pw / 2, 0);
+    archOutline(ps, a);
+    ps.lineTo(a.c + a.pw / 2, 0);
+    ps.lineTo(a.c + a.pw / 2, archSpec.panelTop);
+    ps.lineTo(a.c - a.pw / 2, archSpec.panelTop);
+    ps.lineTo(a.c - a.pw / 2, 0);
+    k.mesh(new T.ExtrudeGeometry(ps, {depth: 0.08, bevelEnabled: false, curveSegments: 24}), pinkPlaster, g);
+    const curve = new T.EllipseCurve(a.c, archSpec.springing, a.R, a.R, 0, Math.PI, false, 0);
+    const pts = curve.getPoints(40).map((v) => new T.Vector3(v.x, v.y, 0.1));
+    k.tube([new T.Vector3(a.r, 0, 0.1), ...pts, new T.Vector3(a.l, 0, 0.1)], 0.05, frame, g);
+    k.box(0.5, 0.42, 0.12, a.c, archSpec.springing + a.R + 0.12, 0.12, trim, g);
   }
 
-  // Facade walls, one extrusion per floor with every window (and the ground-floor arches) cut through.
-  for (let f = 0; f < complex.floors; f++) {
-    const v0 = f * complex.floorHeight;
-    const s = new T.Shape();
-    s.moveTo(0, v0);
-    if (f === 0)
-      for (const a of arches) {
-        s.lineTo(a.l, 0);
-        s.lineTo(a.l, archSpec.springing);
-        s.absellipse(a.c, archSpec.springing, archSpec.width / 2, archSpec.rise, Math.PI, 0, true, 0);
-        s.lineTo(a.r, 0);
-      }
-    s.lineTo(L, v0);
-    s.lineTo(L, v0 + complex.floorHeight);
-    s.lineTo(0, v0 + complex.floorHeight);
-    s.lineTo(0, v0);
-    for (let b = 0; b < complex.modules * complex.baysPerModule; b++) {
-      if (f === 0 && isArchBay(b)) continue;
-      s.holes.push(windowPath(new T.Path(), (b + 0.5) * bayWidth, v0));
-    }
-    const geo = new T.ExtrudeGeometry(s, {depth, bevelEnabled: false, curveSegments: 14});
-    const mesh = k.mesh(geo, wall, g);
-    mesh.position.z = -depth;
-  }
-  // Parapet, floor bands, plinth, end pilasters and coping: the horizontal lines of the drawing.
+  // Parapet, roof band, end pilasters, plinth and coping: the horizontal lines of the drawing.
   k.box(L, complex.parapet, depth, L / 2, H + complex.parapet / 2, -depth / 2, wall, g);
   k.box(L + 0.3, 0.16, 0.62, L / 2, H + complex.parapet + 0.08, -0.2, trim, g);
-  for (const v of [complex.floorHeight, complex.floorHeight * 2, H]) k.box(L, 0.14, 0.12, L / 2, v, 0.05, trim, g);
+  k.box(L, 0.14, 0.12, L / 2, H, 0.05, trim, g);
   for (const u of [0.25, L - 0.25]) k.box(0.5, H + complex.parapet, 0.16, u, (H + complex.parapet) / 2, 0.06, trim, g);
   for (let i = 0; i <= arches.length; i++) {
     const from = i === 0 ? 0 : arches[i - 1].r;
@@ -138,64 +135,62 @@ export function buildComplex(k: Kit, p: Props) {
     k.cylinder(1.3, 0.12, u, H + 0.3 + 1.76, -6.5, m.get('metal', 0x8f9a97), g);
   }
 
-  // Shared window parts, built once in window space and placed in every bay.
-  // Lower U-shaped glazing only (below the transom band).
-  const lower = new T.Shape();
-  const hw = windowSpec.width / 2;
-  lower.moveTo(-hw, windowSpec.glassTop);
-  lower.lineTo(-hw, windowSpec.roundTop);
-  lower.absarc(0, windowSpec.roundTop, hw, Math.PI, 0, false);
-  lower.lineTo(hw, windowSpec.glassTop);
-  lower.lineTo(-hw, windowSpec.glassTop);
-  const lowerGlass = new T.ShapeGeometry(lower, 18);
-  const ring = windowPath(new T.Shape(), 0, 0, 0.07);
-  ring.holes.push(windowPath(new T.Path(), 0, 0));
-  const frameGeo = new T.ExtrudeGeometry(ring, {depth: 0.07, bevelEnabled: false, curveSegments: 14});
-  const transomGeo = new T.PlaneGeometry(windowSpec.width, windowSpec.top - windowSpec.bandTop);
+  // Pink lattice glazing and frames, built once per window type and placed in every bay.
+  const kinds = [windowSpec.low, windowSpec.upperLow].map((low) => {
+    const glassGeo = new T.ShapeGeometry(uOutline(new T.Shape(), 0, hw, low, windowSpec.top), 18);
+    const ring = uOutline(new T.Shape(), 0, hw, low, windowSpec.top, 0.07);
+    ring.holes.push(uOutline(new T.Path(), 0, hw, low, windowSpec.top));
+    return {glassGeo, frameGeo: new T.ExtrudeGeometry(ring, {depth: 0.07, bevelEnabled: false, curveSegments: 14})};
+  });
   let unit = 0;
-  for (let f = 0; f < complex.floors; f++)
-    for (let b = 0; b < complex.modules * complex.baysPerModule; b++) {
-      if (f === 0 && isArchBay(b)) continue;
-      const uc = (b + 0.5) * bayWidth;
+  for (let b = 0; b < complex.bays; b++) {
+    const tall = b < complex.tallBays;
+    const kind = kinds[tall ? 0 : 1];
+    const uc = bayX(b);
+    k.mesh(kind.frameGeo, frame, g).position.set(uc, 0, -0.03);
+    const gl = k.mesh(kind.glassGeo, pinkGlass, g);
+    gl.position.set(uc, 0, -0.22);
+    gl.castShadow = false;
+    if (tall) for (const v of [complex.floorHeight, complex.floorHeight * 2]) k.box(hw * 2, 0.06, 0.06, uc, v, -0.2, frame, g);
+    // Upper floors: lit rooms behind the glazing, so the facade never reads as a flat repeat.
+    for (let f = 1; f < complex.floors; f++) {
       const v0 = f * complex.floorHeight;
-      const fr = k.mesh(frameGeo, frame, g);
-      fr.position.set(uc, v0, -0.03);
-      const gl = k.mesh(lowerGlass, glass, g);
-      gl.position.set(uc, v0, -0.22);
-      gl.castShadow = false;
-      const tr = k.mesh(transomGeo, transom, g);
-      tr.position.set(uc, v0 + (windowSpec.top + windowSpec.bandTop) / 2, -0.2);
-      k.box(windowSpec.width, windowSpec.bandTop - windowSpec.glassTop, 0.1, uc, v0 + (windowSpec.glassTop + windowSpec.bandTop) / 2, -0.18, trim, g);
-      k.box(0.05, windowSpec.glassTop - windowSpec.bottom, 0.06, uc, v0 + (windowSpec.glassTop + windowSpec.bottom) / 2, -0.2, frame, g);
-      k.box(windowSpec.width + 0.24, 0.07, 0.24, uc, v0 + windowSpec.bottom - 0.02, 0.04, trim, g);
-      if (f === 0) {
-        shopUnit(k, p, g, uc, unit);
-        unit++;
-      } else {
-        // Upper floors: lit rooms with varied blinds, so the facade never reads as a flat repeat.
-        k.box(bayWidth - 0.12, complex.floorHeight - 0.3, 0.05, uc, v0 + complex.floorHeight / 2, -3.2, m.interior, g);
-        const blind = (b * 7 + f * 3) % 5;
-        if (blind < 3) k.box(windowSpec.width - 0.08, 0.35 + blind * 0.45, 0.02, uc, v0 + windowSpec.glassTop - (0.35 + blind * 0.45) / 2, -0.4, m.get('fabric', [0xe8dcc6, 0xd9c7a8, 0xc9d0c6][blind], 2), g);
-        k.box(bayWidth - 0.12, 0.05, 3, uc, v0 + 0.02, -1.7, m.get('wood', 0x8a6b4c), g);
-        k.box(0.06, complex.floorHeight - 0.3, 3, (b + 1) * bayWidth, v0 + complex.floorHeight / 2, -1.7, m.get('plaster', 0xe9e2d5), g);
-      }
+      k.box(bayWidth - 0.12, complex.floorHeight - 0.3, 0.05, uc, v0 + complex.floorHeight / 2, -3.2, m.interior, g);
+      k.box(bayWidth - 0.12, 0.05, 3, uc, v0 + 0.02, -1.7, m.get('wood', 0x8a6b4c), g);
+      k.box(0.06, complex.floorHeight - 0.3, 3, (b + 1) * bayWidth, v0 + complex.floorHeight / 2, -1.7, m.get('plaster', 0xe9e2d5), g);
     }
-  for (const a of arches) archway(k, g, a, pinkPlaster, frame, trim, stone);
+    if (tall) shopUnit(k, p, g, uc, unit++, bayWidth, hw * 2 - 0.1, 2.7);
+  }
+  for (const a of arches) {
+    if (isEntrance(a.k)) archway(k, g, a, frame, trim, stone);
+    else {
+      const glass = new T.Shape();
+      glass.moveTo(a.l, 0);
+      archOutline(glass, a);
+      glass.lineTo(a.l, 0);
+      const gl = k.mesh(new T.ShapeGeometry(glass, 24), shopGlass, g);
+      gl.position.z = -0.2;
+      gl.castShadow = false;
+      shopUnit(k, p, g, a.c, unit++, a.r - a.l, 3.2, 2.9);
+    }
+  }
 }
 
-/** A ground-floor shopfront: glazed U-window, name board in the transom band, and a lit shop behind. */
-function shopUnit(k: Kit, p: Props, g: T.Group, uc: number, unit: number) {
+/** A ground-floor shopfront: name board on the glazing and a lit shop behind it. */
+function shopUnit(k: Kit, p: Props, g: T.Group, uc: number, unit: number, cell: number, plaqueW: number, plaqueY: number) {
   const m = k.materials;
   const name = unitNames[unit % unitNames.length];
-  const connection = shopConnections.filter((c) => c.building === 'complex')[unit];
-  if (connection) connection.name = name[0];
-  const plaque = k.label(name[0], name[1], windowSpec.width - 0.06, windowSpec.bandTop - windowSpec.glassTop - 0.03, uc, (windowSpec.glassTop + windowSpec.bandTop) / 2, -0.12, ['#3f4f4a', '#7a3f48', '#2f4a5c', '#6b5536'][unit % 4], g);
+  // The shop belongs to the nearest underground branch (the supply layout is unchanged).
+  const z = complex.zStart - uc;
+  const connection = shopConnections.filter((c) => c.building === 'complex').reduce((a, b) => (Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a));
+  connection.name = name[0];
+  const plaque = k.label(name[0], name[1], plaqueW, 0.5, uc, plaqueY, -0.12, ['#3f4f4a', '#7a3f48', '#2f4a5c', '#6b5536'][unit % 4], g);
   plaque.castShadow = false;
-  const w = bayWidth - 0.16;
+  const w = cell - 0.16;
   const back = -5;
   k.box(w, 3.9, 0.06, uc, 1.95, back, m.interior, g);
   k.box(w, 0.05, -back, uc, 0.03, back / 2, m.get('stone', 0xd8cdb6, 2), g);
-  k.box(0.08, 3.9, -back, uc + bayWidth / 2 - 0.04, 1.95, back / 2, m.get('plaster', 0xeee6d8), g);
+  k.box(0.08, 3.9, -back, uc + cell / 2 - 0.04, 1.95, back / 2, m.get('plaster', 0xeee6d8), g);
   k.box(w, 0.04, 0.04, uc, 3.6, -1.2, m.glow, g);
   const type = unitGoods[unit % unitGoods.length];
   const shelf = m.get('wood', [0xb09874, 0x8c6a4b, 0x6f5a46][unit % 3]);
@@ -211,22 +206,10 @@ function shopUnit(k: Kit, p: Props, g: T.Group, uc: number, unit: number) {
   for (let q = 0; q < 3; q++) p.product(type, uc - 0.35 + q * 0.35, 0.95, -2.4, q, g, false);
 }
 
-/** One of the great arched entrances: pink spandrels, framed opening and a lit passage with stairs. */
-function archway(k: Kit, g: T.Group, a: {l: number; r: number; c: number}, pink: T.Material, frame: T.Material, trim: T.Material, stone: T.Material) {
+/** A walk-through entrance under one of the great arches: lit passage with stairs to the upper floors. */
+function archway(k: Kit, g: T.Group, a: Arch, frame: T.Material, trim: T.Material, stone: T.Material) {
   const m = k.materials;
-  const s = new T.Shape();
-  s.moveTo(a.l, archSpec.springing);
-  s.lineTo(a.l, complex.floorHeight - 0.08);
-  s.lineTo(a.r, complex.floorHeight - 0.08);
-  s.lineTo(a.r, archSpec.springing);
-  s.absellipse(a.c, archSpec.springing, archSpec.width / 2, archSpec.rise, 0, Math.PI, false, 0);
-  const spandrel = k.mesh(new T.ShapeGeometry(s, 24), pink, g);
-  spandrel.position.z = 0.015;
-  const curve = new T.EllipseCurve(a.c, archSpec.springing, archSpec.width / 2, archSpec.rise, 0, Math.PI, false, 0);
-  const pts = curve.getPoints(32).map((v) => new T.Vector3(v.x, v.y, 0.04));
-  k.tube([new T.Vector3(a.r, 0, 0.04), ...pts, new T.Vector3(a.l, 0, 0.04)], 0.05, frame, g);
-  for (const u of [a.l - 0.05, a.r + 0.05]) k.box(0.1, complex.floorHeight, 0.1, u, complex.floorHeight / 2, 0.05, frame, g);
-  k.box(0.5, 0.42, 0.12, a.c, archSpec.springing + archSpec.rise + 0.1, 0.07, trim, g);
+  for (const u of [a.l - 0.05, a.r + 0.05]) k.box(0.1, archSpec.springing + 0.1, 0.1, u, 0.1, 0.1, frame, g);
   const D = complex.depth - 0.4;
   k.box(a.r - a.l, 0.04, D, a.c, 0.02, -D / 2, stone, g);
   for (const u of [a.l + 0.15, a.r - 0.15]) k.box(0.3, complex.floorHeight, D, u, complex.floorHeight / 2, -D / 2 - 0.4, m.get('plaster', 0xf1e9dc, 0.5), g);
